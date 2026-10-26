@@ -1,0 +1,810 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'anthropic-sans',sans-serif;background:var(--surface-0,#f1efe8);color:var(--text-primary,#1a1a17);font-size:13px}
+h2{font-size:16px;font-weight:500;color:var(--text-primary)}
+h3{font-size:13px;font-weight:500;color:var(--text-secondary,#5f5e5a)}
+.app{max-width:680px;margin:0 auto;padding:12px 8px}
+.header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.badge{font-size:11px;padding:3px 8px;border-radius:4px;font-weight:500}
+.badge-green{background:#eaf3de;color:#27500a}
+.badge-amber{background:#faeeda;color:#633806}
+.badge-red{background:#fcebeb;color:#791f1f}
+.badge-blue{background:#e6f1fb;color:#185fa5}
+.badge-gray{background:#f1efe8;color:#5f5e5a}
+.badge-adaptive{background:#eeedfe;color:#3c3489}
+.badge-fixed{background:#faeeda;color:#633806}
+.btn{font-size:12px;padding:5px 10px;border-radius:6px;border:0.5px solid var(--border-strong,#888);background:var(--surface-2,#fff);color:var(--text-primary);cursor:pointer;font-family:inherit}
+.btn:hover{background:var(--surface-1,#f1efe8)}
+.btn-primary{background:#185fa5;color:#fff;border-color:#185fa5}
+.btn-primary:hover{background:#0c447c}
+.btn-sm{font-size:11px;padding:3px 7px}
+.btn-danger{background:#a32d2d;color:#fff;border-color:#a32d2d}
+.btn-danger:hover{background:#791f1f}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.grid4{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:6px}
+.card{background:var(--surface-2,#fff);border:0.5px solid var(--border,rgba(0,0,0,0.12));border-radius:12px;padding:12px}
+.road-card{border-radius:10px;padding:10px;border:1.5px solid transparent;transition:border-color 0.3s}
+.road-green{border-color:#27500a;background:#eaf3de}
+.road-yellow{border-color:#633806;background:#faeeda}
+.road-red{border-color:rgba(0,0,0,0.08);background:var(--surface-2,#fff)}
+.signal-dot{width:10px;height:10px;border-radius:50%;display:inline-block}
+.sig-red{background:#e24b4a}
+.sig-yellow{background:#ef9f27}
+.sig-green{background:#639922}
+.sig-off{background:#d3d1c7}
+.progress-bar{height:5px;border-radius:3px;background:#d3d1c7;overflow:hidden;margin:3px 0}
+.progress-fill{height:100%;border-radius:3px;transition:width 0.5s}
+.pbar-green{background:#639922}
+.pbar-amber{background:#ef9f27}
+.pbar-red{background:#e24b4a}
+.pbar-blue{background:#378add}
+.sensor-row{display:flex;gap:3px;align-items:center;margin:2px 0}
+.sensor-pip{width:8px;height:8px;border-radius:50%;border:1px solid #888}
+.sensor-active{background:#e24b4a;border-color:#a32d2d}
+.sensor-inactive{background:#d3d1c7;border-color:#b4b2a9}
+.label{font-size:11px;color:var(--text-secondary,#5f5e5a)}
+.val{font-size:12px;font-weight:500;color:var(--text-primary)}
+.row{display:flex;justify-content:space-between;align-items:center;margin:2px 0}
+.metric-grid{display:grid;grid-template-columns:1fr 1fr;gap:4px;margin-top:6px}
+.metric{background:var(--surface-1,#f1efe8);border-radius:6px;padding:5px 7px}
+.metric .mval{font-size:14px;font-weight:500}
+.metric .mlbl{font-size:10px;color:var(--text-secondary)}
+.log-box{background:var(--surface-1,#f1efe8);border-radius:6px;padding:6px;height:90px;overflow-y:auto;font-size:10px;font-family:monospace;color:var(--text-secondary)}
+.log-line{padding:1px 0;border-bottom:0.5px solid var(--border,rgba(0,0,0,0.06))}
+.section-title{font-size:11px;font-weight:500;color:var(--text-secondary);text-transform:uppercase;letter-spacing:0.05em;margin:10px 0 6px}
+.tabs{display:flex;gap:4px;margin-bottom:10px}
+.tab{font-size:11px;padding:4px 10px;border-radius:6px;border:0.5px solid var(--border-strong,#888);background:var(--surface-2,#fff);color:var(--text-secondary);cursor:pointer}
+.tab.active{background:#185fa5;color:#fff;border-color:#185fa5}
+.intersection-viz{position:relative;height:200px;margin:8px 0}
+.int-center{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:60px;height:60px;background:var(--surface-1,#f1efe8);border:1px solid var(--border-strong,#888);display:flex;align-items:center;justify-content:center;font-size:10px;color:var(--text-secondary);border-radius:4px}
+.int-road{position:absolute;display:flex;flex-direction:column;gap:2px;align-items:center}
+.int-road-top{top:8px;left:50%;transform:translateX(-50%)}
+.int-road-bottom{bottom:8px;left:50%;transform:translateX(-50%)}
+.int-road-left{left:8px;top:50%;transform:translateY(-50%)}
+.int-road-right{right:8px;top:50%;transform:translateY(-50%)}
+.vehicle-strip{display:flex;gap:2px;flex-wrap:nowrap}
+.veh{width:5px;height:5px;background:#378add;border-radius:1px;animation:arrive 0.3s ease}
+@keyframes arrive{from{opacity:0;transform:scale(0)}to{opacity:1;transform:scale(1)}}
+.compare-table{width:100%;border-collapse:collapse;font-size:11px}
+.compare-table th{background:var(--surface-1,#f1efe8);padding:5px;text-align:left;font-weight:500;border:0.5px solid var(--border,rgba(0,0,0,0.1))}
+.compare-table td{padding:5px;border:0.5px solid var(--border,rgba(0,0,0,0.1))}
+.compare-table .better{color:#27500a;font-weight:500}
+.compare-table .worse{color:#a32d2d}
+.alert{padding:6px 10px;border-radius:6px;font-size:11px;margin:4px 0}
+.alert-warning{background:#faeeda;color:#633806;border:0.5px solid #ef9f27}
+.alert-info{background:#e6f1fb;color:#185fa5;border:0.5px solid #378add}
+select{font-size:12px;padding:4px 8px;border-radius:6px;border:0.5px solid var(--border-strong,#888);background:var(--surface-2,#fff);color:var(--text-primary);font-family:inherit;cursor:pointer}
+input[type=range]{width:100%;height:4px;cursor:pointer}
+.flex{display:flex;gap:8px;align-items:center}
+.flex-wrap{display:flex;flex-wrap:wrap;gap:6px}
+.os-tag{font-size:10px;padding:2px 6px;border-radius:4px;background:#eeedfe;color:#3c3489;border:0.5px solid #afa9ec}
+#log-container{margin-top:8px}
+.thread-status{display:flex;gap:4px;flex-wrap:wrap;margin:4px 0}
+.thread-pill{font-size:10px;padding:2px 7px;border-radius:10px;background:#eaf3de;color:#27500a;border:0.5px solid #9fe1cb}
+.thread-pill.sleeping{background:#f1efe8;color:#888780;border-color:#d3d1c7}
+.thread-pill.blocked{background:#fcebeb;color:#791f1f;border-color:#f7c1c1}
+.starve-warn{font-size:11px;background:#faeeda;color:#633806;padding:3px 7px;border-radius:5px;display:inline-block;margin-top:2px}
+.fail-badge{background:#fcebeb;color:#791f1f;border:0.5px solid #f7c1c1;font-size:10px;padding:2px 6px;border-radius:4px}
+</style>
+</head>
+<body>
+<div class="app">
+<div class="header">
+  <div>
+    <h2>Smart Adaptive Traffic Management</h2>
+    <div class="label" style="margin-top:2px">OS Concepts: Threads · Scheduling · Sync · IPC · Starvation Prevention</div>
+  </div>
+  <div style="display:flex;gap:6px;flex-direction:column;align-items:flex-end">
+    <span id="mode-badge" class="badge badge-adaptive">ADAPTIVE MODE</span>
+    <span id="cycle-badge" class="badge badge-gray">Cycle: 0</span>
+  </div>
+</div>
+
+<div class="tabs">
+  <button class="tab active" onclick="switchTab('dashboard')">Dashboard</button>
+  <button class="tab" onclick="switchTab('intersection')">Intersection</button>
+  <button class="tab" onclick="switchTab('algorithm')">Algorithm</button>
+  <button class="tab" onclick="switchTab('compare')">Fixed vs Adaptive</button>
+  <button class="tab" onclick="switchTab('osview')">OS View</button>
+</div>
+
+<div id="tab-dashboard">
+  <div class="grid4" id="road-cards"></div>
+  <div style="display:flex;gap:6px;align-items:center;margin:8px 0">
+    <div class="label">Scenario:</div>
+    <select id="scenario-sel" onchange="applyScenario(this.value)">
+      <option value="1">1 - Low traffic (all roads)</option>
+      <option value="2">2 - Heavy traffic on Road 1</option>
+      <option value="3">3 - Heavy on Road 1 + Road 3</option>
+      <option value="4">4 - Gradual increase (Road 2)</option>
+      <option value="5">5 - Starvation/fairness test</option>
+      <option value="6">6 - Sudden burst (Road 4)</option>
+      <option value="7">7 - Sensor failure test</option>
+    </select>
+    <button class="btn btn-sm" onclick="toggleMode()">Switch to <span id="mode-toggle-label">Fixed</span></button>
+    <button class="btn btn-sm btn-primary" onclick="resetSystem()">Reset</button>
+  </div>
+  <div class="card" style="margin-top:6px">
+    <div class="row"><span class="label">Active Road</span><span id="active-road" class="badge badge-green">—</span></div>
+    <div class="row"><span class="label">Remaining Green</span><span id="green-remaining" class="val">—</span></div>
+    <div class="row"><span class="label">System Mode</span><span id="sys-mode-label" class="val">ADAPTIVE</span></div>
+    <div class="row"><span class="label">Total Vehicles Cleared</span><span id="total-cleared" class="val">0</span></div>
+    <div class="row"><span class="label">Avg. Wait Time</span><span id="avg-wait" class="val">0s</span></div>
+  </div>
+  <div id="log-container">
+    <div class="section-title">System Log (Logger Thread)</div>
+    <div class="log-box" id="log-box"></div>
+  </div>
+</div>
+
+<div id="tab-intersection" style="display:none">
+  <div class="intersection-viz" id="int-viz">
+    <div class="int-center" id="int-center">🚦</div>
+    <div class="int-road int-road-top" id="int-road1"></div>
+    <div class="int-road int-road-right" id="int-road2"></div>
+    <div class="int-road int-road-bottom" id="int-road3"></div>
+    <div class="int-road int-road-left" id="int-road4"></div>
+  </div>
+  <div class="card">
+    <div class="label" style="margin-bottom:6px">Signal State Timeline</div>
+    <div id="signal-timeline" style="display:flex;gap:2px;flex-wrap:wrap"></div>
+  </div>
+  <div class="card" style="margin-top:6px">
+    <div class="label">Sensor Layout (per road)</div>
+    <div style="font-size:11px;color:var(--text-secondary);margin-top:4px;font-family:monospace">
+      S3 ———— S2 ———— S1 ———— 🚦<br>
+      (far)         (mid)     (near)
+    </div>
+    <div style="margin-top:6px" id="sensor-layout-detail"></div>
+  </div>
+</div>
+
+<div id="tab-algorithm" style="display:none">
+  <div class="card">
+    <div class="label">Priority Formula</div>
+    <div style="background:var(--surface-1,#f1efe8);border-radius:6px;padding:8px;margin:6px 0;font-family:monospace;font-size:11px;line-height:1.8">
+      Priority = w₁·(queue/max_q) + w₂·(wait/max_w) + w₃·(arrival/max_a) + w₄·(growth) − w₅·(fairness_penalty)<br><br>
+      <span style="color:#185fa5">w₁=0.35</span> Queue factor &nbsp;
+      <span style="color:#639922">w₂=0.30</span> Wait factor<br>
+      <span style="color:#ef9f27">w₃=0.20</span> Arrival factor &nbsp;
+      <span style="color:#e24b4a">w₄=0.10</span> Growth factor<br>
+      <span style="color:#888">w₅=0.05</span> Fairness penalty<br><br>
+      Green Time = MIN_GREEN + (priority × (MAX_GREEN − MIN_GREEN))
+    </div>
+    <div class="label" style="margin-top:8px">Live Priority Scores</div>
+    <div id="priority-bars"></div>
+  </div>
+  <div class="card" style="margin-top:8px">
+    <div class="label">Starvation Prevention (Aging)</div>
+    <div style="font-size:11px;color:var(--text-secondary);margin:4px 0 8px">
+      If a road waits &gt; MAX_WAIT_CYCLES without green, its aging bonus increases each cycle until it wins. This guarantees no road starves.
+    </div>
+    <div id="aging-display"></div>
+  </div>
+</div>
+
+<div id="tab-compare" style="display:none">
+  <div class="alert alert-info">Run both modes for the same scenario, then compare results below.</div>
+  <div class="flex" style="margin:8px 0;flex-wrap:wrap;gap:6px">
+    <button class="btn btn-primary btn-sm" onclick="runComparison()">Run Comparison (30 cycles each)</button>
+    <span class="label" id="compare-status">Not yet run</span>
+  </div>
+  <div id="compare-results"></div>
+</div>
+
+<div id="tab-osview" style="display:none">
+  <div class="card">
+    <div class="label">Thread / Process Map</div>
+    <div class="thread-status" id="thread-map"></div>
+  </div>
+  <div class="card" style="margin-top:8px">
+    <div class="label">Mutex / Semaphore State</div>
+    <div id="mutex-state" style="font-size:11px;font-family:monospace;margin-top:4px"></div>
+  </div>
+  <div class="card" style="margin-top:8px">
+    <div class="label">OS Concepts Used in This Prototype</div>
+    <div class="flex-wrap" style="margin-top:6px">
+      <span class="os-tag">Processes</span><span class="os-tag">Threads</span><span class="os-tag">Multithreading</span>
+      <span class="os-tag">Mutex/Semaphores</span><span class="os-tag">IPC (shared memory)</span>
+      <span class="os-tag">Priority Scheduling</span><span class="os-tag">Starvation Prevention</span>
+      <span class="os-tag">Critical Section</span><span class="os-tag">Real-time Processing</span>
+      <span class="os-tag">Aging</span><span class="os-tag">Event-driven</span><span class="os-tag">Resource Sharing</span>
+    </div>
+    <div style="font-size:11px;color:var(--text-secondary);margin-top:8px;line-height:1.7">
+      <b>Sensor threads</b>: 4 independent intervals simulate pthreads, each updating road state.<br>
+      <b>Controller thread</b>: Runs priority scheduler, selects active road, calculates green time.<br>
+      <b>Signal controller</b>: Guards signal state with mutex — only one road can be GREEN. Enforces GREEN→YELLOW→RED transitions.<br>
+      <b>Logger thread</b>: Async log writes simulate a dedicated logging process.<br>
+      <b>IPC</b>: Roads share traffic state via shared memory object (JS state), mutex-protected.<br>
+      <b>Starvation prevention</b>: Aging mechanism boosts priority of waiting roads after MAX_WAIT_CYCLES cycles.
+    </div>
+  </div>
+</div>
+</div>
+
+<script>
+const CONFIG = {
+  NUM_ROADS: 4,
+  MIN_GREEN: 15,
+  MAX_GREEN: 60,
+  YELLOW_TIME: 3,
+  SENSOR_INTERVAL: 1000,
+  CONTROLLER_INTERVAL: 2000,
+  MAX_WAIT_CYCLES: 4,
+  MAX_QUEUE: 40,
+  MAX_WAIT: 120,
+  MAX_ARRIVAL: 6,
+  WEIGHTS: { queue:0.35, wait:0.30, arrival:0.20, growth:0.10, fairness:0.05 },
+  SCENARIOS: {
+    1: [0.5,0.5,0.5,0.5],
+    2: [4.0,0.5,0.5,0.5],
+    3: [4.0,0.5,4.0,0.5],
+    4: [0.5,1.5,0.5,0.5],
+    5: [5.0,0.3,0.3,0.3],
+    6: [0.5,0.5,0.5,0.5],
+    7: [2.0,2.0,2.0,2.0]
+  }
+};
+
+const ROAD_NAMES = ['Road 1 (N)', 'Road 2 (E)', 'Road 3 (S)', 'Road 4 (W)'];
+const COLORS = ['#e24b4a','#378add','#639922','#ef9f27'];
+const BG = ['#fcebeb','#e6f1fb','#eaf3de','#faeeda'];
+
+let state = {
+  roads: [],
+  activeRoad: -1,
+  greenRemaining: 0,
+  signalPhase: 'init',
+  cycle: 0,
+  mode: 'adaptive',
+  logs: [],
+  timeline: [],
+  totalCleared: 0,
+  fixedGreen: 30,
+  arrivalRates: [1.2, 1.2, 1.2, 1.2],
+  scenario: 1,
+  sensorFail: [false,false,false,false],
+  comparisonData: null,
+  running: true
+};
+
+function initRoad(i) {
+  return {
+    id: i,
+    name: ROAD_NAMES[i],
+    vehicleCount: Math.floor(Math.random()*5),
+    queueLength: Math.floor(Math.random()*8),
+    queueLevel: 0,
+    arrivalRate: state.arrivalRates[i],
+    waitingTime: 0,
+    queueGrowthRate: 0,
+    lastGreenTime: 0,
+    cyclesSinceGreen: 0,
+    signalState: 'RED',
+    sensorStatus: [false,false,false],
+    priority: 0,
+    greenDuration: 0,
+    cleared: 0,
+    agingBonus: 0,
+    sensorFailed: false,
+    lastSensorData: null,
+    staleCount: 0,
+    avgWait: 0,
+    maxQueue: 0
+  };
+}
+
+function initSystem() {
+  state.roads = Array.from({length:4},(_,i)=>initRoad(i));
+  state.activeRoad = -1;
+  state.greenRemaining = 0;
+  state.signalPhase = 'init';
+  state.cycle = 0;
+  state.logs = [];
+  state.timeline = [];
+  state.totalCleared = 0;
+}
+
+// === SENSOR THREAD (simulates pthread for each road) ===
+function sensorThread(roadIdx) {
+  const road = state.roads[roadIdx];
+  if (!state.running) return;
+
+  // Simulate communication delay (OS: IPC with latency)
+  const delay = Math.random() * 200;
+
+  setTimeout(() => {
+    // Sensor failure simulation (Section 13)
+    if (state.sensorFail[roadIdx]) {
+      road.sensorFailed = true;
+      road.staleCount++;
+      // Fallback: use last valid reading
+      if (road.lastSensorData) {
+        road.vehicleCount = road.lastSensorData.vehicleCount;
+        road.queueLength = road.lastSensorData.queueLength;
+      }
+      addLog(`⚠ SENSOR FAIL R${roadIdx+1}: using stale data (${road.staleCount} cycles)`, 'warn');
+      return;
+    }
+
+    road.sensorFailed = false;
+    road.staleCount = 0;
+
+    // Traffic generation (Section 4) — Poisson-like arrivals
+    const arr = state.arrivalRates[roadIdx];
+    const newVehicles = Math.floor(Math.random() * arr * 2);
+    const prevCount = road.vehicleCount;
+    road.vehicleCount = Math.max(0, road.vehicleCount + newVehicles);
+
+    // Vehicles cleared when road is green
+    let cleared = 0;
+    if (road.signalState === 'GREEN' && road.vehicleCount > 0) {
+      cleared = Math.min(road.vehicleCount, Math.floor(2 + Math.random()*2));
+      road.vehicleCount = Math.max(0, road.vehicleCount - cleared);
+      road.cleared += cleared;
+      state.totalCleared += cleared;
+    }
+
+    // Update queue metrics
+    const prevQueue = road.queueLength;
+    road.queueLength = Math.min(CONFIG.MAX_QUEUE, road.vehicleCount * 3 + Math.floor(Math.random()*3));
+    road.queueGrowthRate = road.queueLength - prevQueue;
+    road.arrivalRate = 0.8 * road.arrivalRate + 0.2 * newVehicles;
+    if (road.signalState !== 'GREEN') {
+      road.waitingTime += 1;
+    } else {
+      road.waitingTime = Math.max(0, road.waitingTime - 2);
+    }
+    road.avgWait = 0.9*road.avgWait + 0.1*road.waitingTime;
+    road.maxQueue = Math.max(road.maxQueue, road.queueLength);
+
+    // Update sensor status (S1=near, S2=mid, S3=far)
+    road.sensorStatus[0] = road.queueLength > 3;
+    road.sensorStatus[1] = road.queueLength > 15;
+    road.sensorStatus[2] = road.queueLength > 28;
+    road.queueLevel = road.sensorStatus[2]?3:road.sensorStatus[1]?2:road.sensorStatus[0]?1:0;
+
+    // Save last valid reading for sensor failure fallback
+    road.lastSensorData = {vehicleCount:road.vehicleCount, queueLength:road.queueLength};
+
+  }, delay);
+}
+
+// === PRIORITY ALGORITHM (Section 7) ===
+function calculatePriority(road) {
+  if (!state.running) return 0;
+  const W = CONFIG.WEIGHTS;
+
+  // Normalize each factor 0..1
+  const qFactor = Math.min(road.queueLength / CONFIG.MAX_QUEUE, 1);
+  const wFactor = Math.min(road.waitingTime / CONFIG.MAX_WAIT, 1);
+  const aFactor = Math.min(road.arrivalRate / CONFIG.MAX_ARRIVAL, 1);
+  const gFactor = Math.min(Math.max(road.queueGrowthRate, 0) / 5, 1);
+
+  // Fairness penalty: roads that just got green pay a penalty
+  const fairPenalty = road.cyclesSinceGreen === 0 ? 1 : 0;
+
+  // Aging bonus: starvation prevention (Section 8)
+  // If road hasn't had green in MAX_WAIT_CYCLES, aging kicks in
+  const agingBonus = road.cyclesSinceGreen > CONFIG.MAX_WAIT_CYCLES
+    ? Math.min((road.cyclesSinceGreen - CONFIG.MAX_WAIT_CYCLES) * 0.15, 0.6)
+    : 0;
+  road.agingBonus = agingBonus;
+
+  let priority = (
+    W.queue * qFactor +
+    W.wait * wFactor +
+    W.arrival * aFactor +
+    W.growth * gFactor -
+    W.fairness * fairPenalty +
+    agingBonus
+  );
+
+  // Clamp 0..1
+  priority = Math.max(0, Math.min(1, priority));
+  road.priority = priority;
+  return priority;
+}
+
+// === GREEN TIME CALCULATION (Section 9) ===
+function calcGreenTime(road) {
+  const base = CONFIG.MIN_GREEN;
+  const range = CONFIG.MAX_GREEN - CONFIG.MIN_GREEN;
+  return Math.round(base + road.priority * range);
+}
+
+// === SIGNAL CONTROLLER THREAD (Section 10) — MUTEX PROTECTED ===
+// signalMutex: only one road can be GREEN at a time (critical section)
+let signalMutex = false;
+let controllerRunning = false;
+
+function controllerThread() {
+  if (!state.running) return;
+  if (controllerRunning) return; // Mutex: controller already running (busy-wait analog)
+  controllerRunning = true; // Acquire mutex
+
+  // Phase: green → yellow → all-red → next green
+  if (state.signalPhase === 'green' && state.greenRemaining > 0) {
+    state.greenRemaining -= 2;
+    controllerRunning = false;
+    return;
+  }
+
+  if (state.signalPhase === 'green' && state.greenRemaining <= 0) {
+    // Transition to YELLOW
+    if (state.activeRoad >= 0) {
+      state.roads[state.activeRoad].signalState = 'YELLOW';
+    }
+    state.signalPhase = 'yellow';
+    state.greenRemaining = CONFIG.YELLOW_TIME;
+    addLog(`→ YELLOW on ${ROAD_NAMES[state.activeRoad]}`, 'info');
+    controllerRunning = false;
+    return;
+  }
+
+  if (state.signalPhase === 'yellow') {
+    state.greenRemaining -= 2;
+    if (state.greenRemaining <= 0) {
+      // All RED transition
+      if (state.activeRoad >= 0) state.roads[state.activeRoad].signalState = 'RED';
+      state.signalPhase = 'allred';
+      state.greenRemaining = 2;
+      addLog(`→ ALL RED (transition)`, 'info');
+    }
+    controllerRunning = false;
+    return;
+  }
+
+  // Select next road (ADAPTIVE or FIXED)
+  state.cycle++;
+  let nextRoad = -1;
+
+  if (state.mode === 'adaptive') {
+    // Calculate priorities for all roads
+    let maxP = -1;
+    state.roads.forEach(r => {
+      const p = calculatePriority(r);
+      if (p > maxP) { maxP = p; nextRoad = r.id; }
+    });
+  } else {
+    // Fixed time: round-robin
+    nextRoad = (state.activeRoad + 1) % 4;
+  }
+
+  // Update cycle counts (starvation tracking)
+  state.roads.forEach((r,i) => {
+    if (i === nextRoad) r.cyclesSinceGreen = 0;
+    else r.cyclesSinceGreen++;
+  });
+
+  state.activeRoad = nextRoad;
+  const road = state.roads[nextRoad];
+  road.signalState = 'GREEN';
+  road.greenDuration = state.mode === 'adaptive' ? calcGreenTime(road) : state.fixedGreen;
+  state.greenRemaining = road.greenDuration;
+  state.signalPhase = 'green';
+  road.lastGreenTime = state.cycle;
+
+  // Push to timeline
+  state.timeline.push({road:nextRoad, dur:road.greenDuration, cycle:state.cycle});
+  if (state.timeline.length > 20) state.timeline.shift();
+
+  addLog(`🟢 GREEN: ${road.name} | dur=${road.greenDuration}s | prio=${road.priority.toFixed(2)} | wait=${road.waitingTime}s`, 'green');
+
+  controllerRunning = false; // Release mutex
+}
+
+function addLog(msg, type='info') {
+  const now = new Date();
+  const ts = `${String(now.getMinutes()).padStart(2,'0')}:${String(now.getSeconds()).padStart(2,'0')}`;
+  state.logs.unshift({ts, msg, type});
+  if (state.logs.length > 50) state.logs.pop();
+}
+
+function applyScenario(val) {
+  state.scenario = parseInt(val);
+  const rates = CONFIG.SCENARIOS[state.scenario] || [1,1,1,1];
+  state.arrivalRates = [...rates];
+  if (state.scenario === 6) {
+    // Sudden burst on Road 4
+    setTimeout(()=>{ state.arrivalRates[3] = 6; addLog('⚡ BURST: Road 4 traffic surge!','warn'); }, 3000);
+    setTimeout(()=>{ state.arrivalRates[3] = 1; addLog('✓ Road 4 burst ended','info'); }, 12000);
+    state.arrivalRates = [0.5,0.5,0.5,0.5];
+  }
+  if (state.scenario === 7) {
+    // Sensor failure on Road 2 after 5s
+    state.sensorFail = [false,false,false,false];
+    setTimeout(()=>{ state.sensorFail[1]=true; addLog('🔴 SENSOR FAILURE: Road 2 sensors offline!','warn'); }, 4000);
+    setTimeout(()=>{ state.sensorFail[1]=false; addLog('✅ Road 2 sensors recovered','info'); }, 15000);
+  } else {
+    state.sensorFail = [false,false,false,false];
+  }
+  addLog(`Scenario ${state.scenario} loaded`, 'info');
+}
+
+function toggleMode() {
+  state.mode = state.mode === 'adaptive' ? 'fixed' : 'adaptive';
+  document.getElementById('mode-badge').textContent = state.mode.toUpperCase()+' MODE';
+  document.getElementById('mode-badge').className = 'badge ' + (state.mode==='adaptive'?'badge-adaptive':'badge-amber');
+  document.getElementById('mode-toggle-label').textContent = state.mode==='adaptive'?'Fixed':'Adaptive';
+  document.getElementById('sys-mode-label').textContent = state.mode.toUpperCase();
+  addLog(`Mode switched to ${state.mode.toUpperCase()}`,'info');
+}
+
+function resetSystem() {
+  initSystem();
+  applyScenario(state.scenario);
+  addLog('System reset','info');
+}
+
+// === COMPARISON (Section 12) ===
+function runComparison() {
+  document.getElementById('compare-status').textContent = 'Running...';
+  const CYCLES = 30;
+  const results = {fixed:{avgWait:0,maxWait:0,avgQueue:0,maxQueue:0,cleared:0,cycles:CYCLES},
+                   adaptive:{avgWait:0,maxWait:0,avgQueue:0,maxQueue:0,cleared:0,cycles:CYCLES}};
+
+  function simulateMode(mode, rates) {
+    let roads = Array.from({length:4},(_,i)=>({
+      vehicleCount:5,queueLength:10,waitingTime:10,arrivalRate:rates[i],
+      queueGrowthRate:0,cyclesSinceGreen:i,priority:0,agingBonus:0
+    }));
+    let activeRoad = 0;
+    let totalWait=0,maxWait=0,totalQueue=0,maxQueue=0,cleared=0;
+
+    for (let c=0;c<CYCLES;c++) {
+      // Sensor update
+      roads.forEach((r,i)=>{
+        const nv = Math.floor(Math.random()*rates[i]*2);
+        r.vehicleCount = Math.max(0,r.vehicleCount+nv);
+        if (roads[i].id===activeRoad) {
+          const cl = Math.min(r.vehicleCount,3);
+          r.vehicleCount = Math.max(0,r.vehicleCount-cl);
+          cleared+=cl;
+          r.waitingTime = Math.max(0,r.waitingTime-2);
+        } else {
+          r.waitingTime+=1;
+        }
+        r.queueLength = Math.min(40,r.vehicleCount*3);
+      });
+
+      // Select road
+      if (mode==='adaptive') {
+        let maxP=-1;
+        roads.forEach((r,i)=>{
+          const p = Math.min(r.queueLength/40,1)*0.35+Math.min(r.waitingTime/120,1)*0.30+
+                    Math.min(r.arrivalRate/6,1)*0.20+(r.cyclesSinceGreen>4?Math.min((r.cyclesSinceGreen-4)*0.15,0.6):0);
+          if(p>maxP){maxP=p;activeRoad=i;}
+        });
+      } else {
+        activeRoad=(activeRoad+1)%4;
+      }
+      roads.forEach((r,i)=>{r.cyclesSinceGreen=i===activeRoad?0:r.cyclesSinceGreen+1;});
+
+      roads.forEach(r=>{
+        totalWait+=r.waitingTime;
+        maxWait=Math.max(maxWait,r.waitingTime);
+        totalQueue+=r.queueLength;
+        maxQueue=Math.max(maxQueue,r.queueLength);
+      });
+    }
+    return {avgWait:Math.round(totalWait/(CYCLES*4)),maxWait,avgQueue:Math.round(totalQueue/(CYCLES*4)),maxQueue,cleared};
+  }
+
+  const rates = CONFIG.SCENARIOS[state.scenario]||[1,1,1,1];
+  results.fixed = simulateMode('fixed',rates);
+  results.adaptive = simulateMode('adaptive',rates);
+  state.comparisonData = results;
+
+  document.getElementById('compare-status').textContent = 'Complete';
+  renderComparison();
+}
+
+function renderComparison() {
+  const d = state.comparisonData;
+  if (!d) { document.getElementById('compare-results').innerHTML=''; return; }
+  const f=d.fixed, a=d.adaptive;
+  const better=(av,fv,lowerBetter=true)=>lowerBetter?(av<fv?'better':'worse'):(av>fv?'better':'worse');
+  document.getElementById('compare-results').innerHTML=`
+  <table class="compare-table" style="margin-top:8px">
+    <thead><tr><th>Metric</th><th>Fixed-Time</th><th>Adaptive</th><th>Winner</th></tr></thead>
+    <tbody>
+      <tr><td>Avg. Wait Time (s)</td><td>${f.avgWait}</td><td class="${better(a.avgWait,f.avgWait)}">${a.avgWait}</td><td class="${better(a.avgWait,f.avgWait)}">Adaptive</td></tr>
+      <tr><td>Max Wait Time (s)</td><td>${f.maxWait}</td><td class="${better(a.maxWait,f.maxWait)}">${a.maxWait}</td><td class="${better(a.maxWait,f.maxWait)}">Adaptive</td></tr>
+      <tr><td>Avg. Queue Length (m)</td><td>${f.avgQueue}</td><td class="${better(a.avgQueue,f.avgQueue)}">${a.avgQueue}</td><td class="${better(a.avgQueue,f.avgQueue)}">Adaptive</td></tr>
+      <tr><td>Max Queue Length (m)</td><td>${f.maxQueue}</td><td class="${better(a.maxQueue,f.maxQueue)}">${a.maxQueue}</td><td class="${better(a.maxQueue,f.maxQueue)}">Adaptive</td></tr>
+      <tr><td>Vehicles Cleared</td><td>${f.cleared}</td><td class="${better(a.cleared,f.cleared,false)}">${a.cleared}</td><td class="${better(a.cleared,f.cleared,false)}">Adaptive</td></tr>
+      <tr><td>Signal Cycles</td><td>${d.fixed.cycles}</td><td>${d.adaptive.cycles}</td><td>—</td></tr>
+    </tbody>
+  </table>
+  <div class="alert alert-info" style="margin-top:8px">Results are simulation-based. Adaptive advantage is most visible under uneven traffic loads (scenarios 2,3,5).</div>`;
+}
+
+// === RENDER ===
+function render() {
+  // Road cards
+  const container = document.getElementById('road-cards');
+  if (container) {
+    container.innerHTML = state.roads.map(r=>{
+      const sig = r.signalState;
+      const cardClass = sig==='GREEN'?'road-green':sig==='YELLOW'?'road-yellow':'road-red';
+      const sigColors = {RED:'sig-red',YELLOW:'sig-yellow',GREEN:'sig-green'};
+      const qPct = Math.min(r.queueLength/CONFIG.MAX_QUEUE*100,100);
+      const pPct = Math.min(r.priority*100,100);
+      const pBarColor = r.priority>0.7?'pbar-red':r.priority>0.4?'pbar-amber':'pbar-green';
+      const sensors = [0,1,2].map(s=>`<div class="sensor-pip ${r.sensorStatus[s]?'sensor-active':'sensor-inactive'}" title="S${s+1}"></div>`).join('');
+      return `<div class="road-card ${cardClass}" id="rcard${r.id}">
+        <div class="row"><span style="font-size:11px;font-weight:500;color:${COLORS[r.id]}">${r.name}</span>
+          <span class="signal-dot ${sigColors[sig]}"></span>
+          ${r.sensorFailed?'<span class="fail-badge">SENSOR FAIL</span>':''}
+        </div>
+        <div class="row"><span class="label">Vehicles</span><span class="val">${r.vehicleCount}</span></div>
+        <div class="progress-bar"><div class="progress-fill pbar-blue" style="width:${Math.min(r.vehicleCount/20*100,100).toFixed(0)}%"></div></div>
+        <div class="row"><span class="label">Queue</span><span class="val">${r.queueLength}m</span></div>
+        <div class="progress-bar"><div class="progress-fill ${qPct>75?'pbar-red':qPct>40?'pbar-amber':'pbar-green'}" style="width:${qPct.toFixed(0)}%"></div></div>
+        <div class="sensor-row">S1 ${sensors.slice(0,1)}${sensors.slice(1,2)}${sensors.slice(2)} S3</div>
+        <div class="row"><span class="label">Wait</span><span class="val">${r.waitingTime}s</span></div>
+        <div class="row"><span class="label">Priority</span><span class="val">${r.priority.toFixed(2)}</span></div>
+        <div class="progress-bar"><div class="progress-fill ${pBarColor}" style="width:${pPct.toFixed(0)}%"></div></div>
+        <div class="row"><span class="label">Signal</span><span class="badge ${sig==='GREEN'?'badge-green':sig==='YELLOW'?'badge-amber':'badge-gray'}" style="font-size:10px">${sig}</span></div>
+        ${r.agingBonus>0?`<div class="starve-warn">⏳ Aging +${r.agingBonus.toFixed(2)}</div>`:''}
+      </div>`;
+    }).join('');
+  }
+
+  // Status bar
+  const ar = state.activeRoad;
+  document.getElementById('active-road').textContent = ar>=0 ? ROAD_NAMES[ar] : '—';
+  document.getElementById('green-remaining').textContent = state.greenRemaining > 0 ? `${state.greenRemaining}s (${state.signalPhase})` : '—';
+  document.getElementById('cycle-badge').textContent = `Cycle: ${state.cycle}`;
+  document.getElementById('total-cleared').textContent = state.totalCleared;
+  const avgWait = state.roads.reduce((s,r)=>s+r.waitingTime,0)/4;
+  document.getElementById('avg-wait').textContent = avgWait.toFixed(1)+'s';
+
+  // Log box
+  const logBox = document.getElementById('log-box');
+  if (logBox) {
+    logBox.innerHTML = state.logs.slice(0,20).map(l=>{
+      const c = l.type==='warn'?'#a32d2d':l.type==='green'?'#27500a':'var(--text-secondary)';
+      return `<div class="log-line" style="color:${c}">[${l.ts}] ${l.msg}</div>`;
+    }).join('');
+  }
+
+  // Intersection viz
+  const int1 = document.getElementById('int-road1');
+  const int2 = document.getElementById('int-road2');
+  const int3 = document.getElementById('int-road3');
+  const int4 = document.getElementById('int-road4');
+  if (int1) {
+    [int1,int2,int3,int4].forEach((el,i)=>{
+      const r=state.roads[i];
+      const bg = r.signalState==='GREEN'?'#eaf3de':r.signalState==='YELLOW'?'#faeeda':'var(--surface-1,#f1efe8)';
+      const vc = Math.min(r.vehicleCount,10);
+      const vehs = Array.from({length:vc}).map(()=>`<div class="veh"></div>`).join('');
+      el.innerHTML=`<div style="font-size:10px;color:${COLORS[i]};font-weight:500">${['N','E','S','W'][i]}</div>
+        <div style="background:${bg};border-radius:4px;padding:3px;min-width:30px;text-align:center;border:0.5px solid var(--border)">
+          <div class="signal-dot ${r.signalState==='GREEN'?'sig-green':r.signalState==='YELLOW'?'sig-yellow':'sig-red'}" style="margin:0 auto 2px"></div>
+          <div style="font-size:10px">${r.vehicleCount}🚗</div>
+          <div class="vehicle-strip" style="justify-content:center">${vehs}</div>
+        </div>`;
+    });
+  }
+
+  // Signal timeline
+  const tl = document.getElementById('signal-timeline');
+  if (tl && state.timeline.length) {
+    tl.innerHTML = state.timeline.map(t=>`<div style="background:${BG[t.road]};border:0.5px solid ${COLORS[t.road]};border-radius:4px;padding:2px 5px;font-size:10px;color:${COLORS[t.road]}">${['N','E','S','W'][t.road]} ${t.dur}s</div>`).join('');
+  }
+
+  // Sensor layout detail
+  const sl = document.getElementById('sensor-layout-detail');
+  if (sl) {
+    sl.innerHTML = state.roads.map(r=>`
+      <div class="row" style="margin:4px 0">
+        <span style="font-size:11px;color:${COLORS[r.id]};font-weight:500;min-width:60px">${r.name}</span>
+        <span class="sensor-pip ${r.sensorStatus[2]?'sensor-active':'sensor-inactive'}" title="S3 (far)"></span>
+        <span style="font-size:10px;color:var(--text-secondary)">S3</span>
+        ——
+        <span class="sensor-pip ${r.sensorStatus[1]?'sensor-active':'sensor-inactive'}" title="S2 (mid)"></span>
+        <span style="font-size:10px;color:var(--text-secondary)">S2</span>
+        ——
+        <span class="sensor-pip ${r.sensorStatus[0]?'sensor-active':'sensor-inactive'}" title="S1 (near)"></span>
+        <span style="font-size:10px;color:var(--text-secondary)">S1</span>
+        ——🚦
+        <span class="badge ${r.queueLevel>=3?'badge-red':r.queueLevel>=2?'badge-amber':r.queueLevel>=1?'badge-blue':'badge-gray'}" style="font-size:10px;margin-left:8px">L${r.queueLevel}</span>
+      </div>`).join('');
+  }
+
+  // Algorithm tab
+  const pb = document.getElementById('priority-bars');
+  if (pb) {
+    pb.innerHTML = state.roads.map(r=>`
+      <div style="margin:5px 0">
+        <div class="row"><span style="font-size:11px;color:${COLORS[r.id]}">${r.name}</span><span class="val">${r.priority.toFixed(3)}</span></div>
+        <div class="progress-bar"><div class="progress-fill pbar-blue" style="width:${(r.priority*100).toFixed(0)}%;background:${COLORS[r.id]}"></div></div>
+      </div>`).join('');
+  }
+
+  const ag = document.getElementById('aging-display');
+  if (ag) {
+    ag.innerHTML = state.roads.map(r=>`
+      <div class="row" style="margin:3px 0">
+        <span style="font-size:11px;color:${COLORS[r.id]}">${r.name}</span>
+        <span class="val">Waited ${r.cyclesSinceGreen} cycle(s)</span>
+        ${r.cyclesSinceGreen>CONFIG.MAX_WAIT_CYCLES?`<span class="starve-warn">Aging +${r.agingBonus.toFixed(2)}</span>`:'<span class="badge badge-green" style="font-size:10px">OK</span>'}
+      </div>`).join('');
+  }
+
+  // OS View
+  const tm = document.getElementById('thread-map');
+  if (tm) {
+    const threads = [
+      {name:'SensorMgr_R1', state: state.sensorFail[0]?'blocked':'running'},
+      {name:'SensorMgr_R2', state: state.sensorFail[1]?'blocked':'running'},
+      {name:'SensorMgr_R3', state: state.sensorFail[2]?'blocked':'running'},
+      {name:'SensorMgr_R4', state: state.sensorFail[3]?'blocked':'running'},
+      {name:'ControllerThread', state: controllerRunning?'running':'sleeping'},
+      {name:'SignalController', state: state.signalPhase!=='init'?'running':'sleeping'},
+      {name:'LoggerThread', state:'running'},
+      {name:'TrafficGen_R1', state:'running'},
+      {name:'TrafficGen_R2', state:'running'},
+      {name:'TrafficGen_R3', state:'running'},
+      {name:'TrafficGen_R4', state:'running'},
+    ];
+    tm.innerHTML = threads.map(t=>`<span class="thread-pill ${t.state}">${t.name} [${t.state}]</span>`).join('');
+  }
+
+  const ms = document.getElementById('mutex-state');
+  if (ms) {
+    ms.innerHTML = `
+Signal Mutex (Critical Section):<br>
+  signalMutex = ${signalMutex ? '<span style="color:#a32d2d">LOCKED</span>' : '<span style="color:#27500a">UNLOCKED</span>'}<br>
+  controllerRunning = ${controllerRunning ? '<span style="color:#a32d2d">LOCKED</span>' : '<span style="color:#27500a">UNLOCKED</span>'}<br><br>
+Shared Memory (IPC — road state):<br>
+  roads[0..3] → vehicle_count, queue_length, priority, signal_state<br>
+  (Protected by sensor mutex — one thread writes at a time)<br><br>
+Semaphore analogy: only 1 road GREEN at a time<br>
+  → enforced by signalPhase state + controllerRunning flag`;
+  }
+}
+
+// === MAIN LOOPS (simulating OS threads) ===
+initSystem();
+applyScenario(1);
+
+// Sensor threads (one per road, running concurrently)
+const sensorIntervals = [0,1,2,3].map(i=>setInterval(()=>sensorThread(i), CONFIG.SENSOR_INTERVAL + i*100));
+
+// Controller thread (higher interval — runs priority scheduler)
+const controllerInterval = setInterval(controllerThread, CONFIG.CONTROLLER_INTERVAL);
+
+// Render thread (UI refresh)
+const renderInterval = setInterval(render, 500);
+
+// Tab switching
+function switchTab(name) {
+  ['dashboard','intersection','algorithm','compare','osview'].forEach(t=>{
+    const el = document.getElementById('tab-'+t);
+    if (el) el.style.display = t===name?'block':'none';
+  });
+  document.querySelectorAll('.tab').forEach((t,i)=>{
+    t.classList.toggle('active', ['dashboard','intersection','algorithm','compare','osview'][i]===name);
+  });
+  if (name==='compare') renderComparison();
+}
+
+// Initial log
+addLog('System initialized — ADAPTIVE mode','info');
+addLog('4 sensor threads started (Road 1-4)','info');
+addLog('Controller thread running','info');
+addLog('Logger thread active','info');
+
+render();
+</script>
+</body>
+</html>
